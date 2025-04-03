@@ -3,9 +3,12 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import google.generativeai as genai  # Google Gemini API
+from dotenv import load_dotenv
+
+   load_dotenv()
 
 # Configure Gemini API (Replace with your actual API key)
-genai.configure(api_key="AIzaSyBzFYi2WXnksNrSIEeG3Jo1iGtDdJ8TvQg")
+genai.configure(os.getenv("API_KEY"))
 
 # Initialize SQLite Database
 conn = sqlite3.connect("expenses.db", check_same_thread=False)
