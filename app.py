@@ -9,7 +9,8 @@ import os
 load_dotenv()
 
 # Configure Gemini API (Replace with your actual API key)
-genai.configure()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
 
 # Initialize SQLite Database
 conn = sqlite3.connect("expenses.db", check_same_thread=False)
@@ -71,6 +72,26 @@ def fetch_expense_summary(user):
 def fetch_expenses(user):
     c.execute("SELECT category, amount, date FROM expenses WHERE user=?", (user,))
     return c.fetchall()
+
+# ✅ Add these updated fetch functions to include row IDs
+def fetch_expenses_with_ids(user):
+    c.execute("SELECT id, category, amount, date FROM expenses WHERE user=?", (user,))
+    return c.fetchall()
+
+def delete_expense(expense_id):
+    c.execute("DELETE FROM expenses WHERE id=?", (expense_id,))
+    conn.commit()
+    st.success("Expense deleted successfully!")
+
+def fetch_debts_with_ids(user):
+    c.execute("SELECT id, friend, amount, status, date FROM debts WHERE user=?", (user,))
+    return c.fetchall()
+
+def delete_debt(debt_id):
+    c.execute("DELETE FROM debts WHERE id=?", (debt_id,))
+    conn.commit()
+    st.success("Debt entry deleted successfully!")
+
 
 
 def generate_report(expenses):
@@ -163,6 +184,17 @@ elif "user" in st.session_state:
         if st.button("Add Expense"):
             add_expense(user, category, amount, str(date))
 
+        st.write("### Your Expenses")
+        expenses = fetch_expenses_with_ids(user)
+        if expenses:
+            df = pd.DataFrame(expenses, columns=["ID", "Category", "Amount", "Date"])
+            st.dataframe(df)
+            delete_id = st.number_input("Enter Expense ID to delete", min_value=1, step=1)
+            if st.button("Delete Expense"):
+                delete_expense(delete_id)
+        else:
+            st.info("No expenses recorded yet.")
+
     elif choice == "View Report📆📊":
         expenses = fetch_expenses(user)
         if expenses:
@@ -170,25 +202,43 @@ elif "user" in st.session_state:
         else:
             st.warning("No expenses found.")
 
+
     elif choice == "Manage Debts💰🤝":
+
         st.write("### Track Borrowed/Lent Money")
+
         friend = st.text_input("Friend's Name")
+
         amount = st.number_input("Amount", min_value=0.0)
+
         status = st.radio("Transaction Type", ["Borrowed", "Lent"])
+
         date = st.date_input("Date")
 
         if st.button("Add Transaction"):
             add_debt(user, friend, amount, status.lower(), str(date))
 
-        debts = fetch_debts(user)
+        debts = fetch_debts_with_ids(user)
+
         if debts:
-            df = pd.DataFrame(debts, columns=["Friend", "Amount", "Status", "Date"])
-            st.write(df)
+
+            df = pd.DataFrame(debts, columns=["ID", "Friend", "Amount", "Status", "Date"])
+
+            st.dataframe(df)
+
+            delete_id = st.number_input("Enter Debt ID to delete", min_value=1, step=1, key="debt_delete")
+
+            if st.button("Delete Debt Entry"):
+                delete_debt(delete_id)
 
             summary = fetch_debt_summary(user)
+
             st.write(f"*Total Borrowed:* ₹{summary.get('borrowed', 0)}")
+
             st.write(f"*Total Lent:* ₹{summary.get('lent', 0)}")
+
         else:
+
             st.warning("No records found.")
 
     elif choice == "Help Broo🥲":
