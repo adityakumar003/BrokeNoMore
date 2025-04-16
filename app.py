@@ -4,8 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import google.generativeai as genai  # Google Gemini API
 from dotenv import load_dotenv
+import os
 
-   load_dotenv()
+load_dotenv()
 
 # Configure Gemini API (Replace with your actual API key)
 genai.configure(os.getenv("API_KEY"))
