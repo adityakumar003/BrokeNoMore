@@ -9,7 +9,7 @@ import os
 load_dotenv()
 
 # Configure Gemini API (Replace with your actual API key)
-genai.configure(os.getenv("API_KEY"))
+genai.configure()
 
 # Initialize SQLite Database
 conn = sqlite3.connect("expenses.db", check_same_thread=False)
