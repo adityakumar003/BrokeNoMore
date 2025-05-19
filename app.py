@@ -149,7 +149,7 @@ def chatbot_response(user, prompt):
             "\n\nReply only if the question is related to finance and expenses. Otherwise, say: 'I am here to help you save money! Ask queries related to that.'"
         )
 
-        model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(full_prompt)
         return response.text
     except Exception as e:
